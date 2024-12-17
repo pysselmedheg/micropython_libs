@@ -7,6 +7,8 @@ The syntax is a pythonification of ARM UAL (Unified Assembler Language), with so
 We start with an example, pointing out some differences to ASM UAL or @micropython.arm_thumb:
 
 ```
+import armv6m_asm
+
 @armv6m_asm.asm_thumb
 @a6a.asm_thumb
 def sum():                 # No args, since the decorator can't see them. 
@@ -60,7 +62,7 @@ There is also a new directive:
 
 This stores argc in the output, so that the launcher can check the argument count.
 
-# Preprocessor macro
+## Preprocessor macro
 
 `args_to_regs(n)`
 
@@ -71,4 +73,18 @@ This inserts assembler instructions to unpack the r6=argc r7=argv format to the 
 The internal working of the assembling process is done by calling the decorated function. The assembeler functions are regular python functions that will emit the machine code that represent the instruction. This is important to know to understand how python can be used for preprocessing. It is possible to mix the assembler functions with regular python code to calculate constants, and even to control program flow to select what assembler instructions to emit. But note that this code must only depend on things known at assembly time.
 
 The register tokens (r0, r1, ...) are actually variables with large integers. They are too big to be misstaken for a 32 bit integer. But since they are consecutive integers, it's possible to do tricks like writing r0+i to get register #i.
+
+
+# Calling the assembled function
+
+```
+from arm_native import run_native
+run_native(sum, 2, 3, 4)      # Simple usage: Multiple integers
+
+from array import array
+a = array('I', (1, 2, 3, 4))
+run_native(sum, a)            # Advanced usage: one array
+```
+
+The simplest way to call the function is the first one. But the second one has the advantage that the assembler can update the array to get multiple bidirectional arguments.
 
