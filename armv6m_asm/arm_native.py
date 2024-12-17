@@ -6,9 +6,8 @@ def run_native(mc, *argv):
         arg = argv[0]
     else:
         arg = array('I', argv)
-    if mc[1] >= 0 and mc[1] != len(argv):
-        print("Expected arg count: %d  got:%d" % (mc[1], len(argv)))
-        raise Exception
+    if mc[1] >= 0 and mc[1] != len(arg):
+        raise Exception("Expected arg count: %d  got:%d" % (mc[1], len(arg)))
     return run_native_launcher(mc[0], len(arg), arg)  # asm_thumb calls will send adressof(arg) when arg is an array
 
 @micropython.asm_thumb

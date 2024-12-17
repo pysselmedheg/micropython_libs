@@ -48,7 +48,7 @@ def asm_thumb(func):
                    {'pc':0, 'mc':[], 'labels':{}, 'missing_labels':[]})
     old_globs   = update_dict(func_globs, exp_globs)
     # Copy some main globals to lib globals.
-    for k in ['push', 'pop', 'ldr']:
+    for k in ['push', 'pop', 'ldr', 'ldm', 'subs']:
         globals()[k] = func_globs[k]
     try:
         labels = {}
@@ -133,8 +133,6 @@ def data(size, *arg):
 
 def argcount(n): # Store the excpected argc in the output.
     global argc
-    if n > 6:
-        raise Exception("Too many arguments")
     argc = n
 
 def get_directives():
@@ -143,8 +141,13 @@ def get_directives():
 # ==== Assembler macros ====
 def args_to_regs(n):
     argcount(n)
-    for i in range(n):
-        ldr(r0 + i, [r7, 4*i])
+    if n > 7:
+        raise Exception("Too many arguments")
+    elif n > 1:
+        ldm(r7, set([r0 + i for i in range(n)]))
+        subs(r7, 4 * n)
+    else:
+        ldr(r0, [r7, 0])
 
 def get_macros():
     return {k:globals()[k] for k in ['args_to_regs']}
@@ -351,7 +354,7 @@ def def_instructions():
                    ( (rlo, imm8),        0x3800, mc_8_0),
                    ( (rlo, rlo, rlo),    0x1a00, mc_0_3_6), )),
         ('sub',   (( (rsp, imm7_2),      0xb080, mc_x_0), )),
-        ('svc',   (( (imm8),             0xdf00, mc_0), )),
+        ('svc',   (( (imm8, ),           0xdf00, mc_0), )),
         ('sxtb',  (( (rlo, rlo),         0xb240, mc_0_3), )),
         ('sxth',  (( (rlo, rlo),         0xb200, mc_0_3), )),
         ('tst',   (( (rlo, rlo),         0x4200, mc_0_3), )),
