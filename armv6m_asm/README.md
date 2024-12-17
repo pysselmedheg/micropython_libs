@@ -9,7 +9,8 @@ We start with an example, pointing out some differences to ASM UAL or @micropyth
 ```
 @armv6m_asm.asm_thumb
 @a6a.asm_thumb
-def sum():                 # No args, since the decorator can't see them. The launcher will give arguments as argc/argv in r6/r7 instead.
+def sum():                 # No args, since the decorator can't see them. 
+                           # The launcher will give arguments as argc/argv in r6/r7 instead.
     movs(r0, 0)            # Sets flags, so it is 'movs'
     movs(r1, 0)
     b('loop_check')        # Labels are strings.
@@ -36,13 +37,17 @@ ldm and stm is do not use the ! character. (When the pointer register isn't upda
 The assembler directives includes the same as with @micropython.asm_thumb.
 
 `align(4)`
+
 Moves PC forward to nearest mod 4 address. The skipped bytes are filled with zerq.
 
 `data(size, data0, data1, ...)`
+
 Each data item is size bytes. The start is aligned mod size. Each data statement always ends on a mod 2 address. Ths means that a data directive with an odd number of bytes (size==1), will have the bytes packed, but an extra 0 is added at the end.
 
 `label('my_label')`
+
 Labels are strings. The label value is the current PC value. 
+
 Note that this means that a label before a `data(4, ...)` directive might not point to the upcomming data, since it might move PC in an alignment. When PC might not be aligned mod 4, it's best to do:
 ```
 align(4)
@@ -50,11 +55,15 @@ label('my_label')
 data(4, ...)
 ```
 There is also a new directive:
+
 `argcount(argc)`
+
 This stores argc in the output, so that the launcher can check the argument count.
 
 # Preprocessor macro
+
 `args_to_regs(n)`
+
 This inserts assembler instructions to unpack the r6=argc r7=argv format to the more common format with arguments in r0, r1, ...
 
 ## Python preprocessor
