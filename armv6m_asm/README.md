@@ -10,7 +10,6 @@ We start with an example, pointing out some differences to ASM UAL or @micropyth
 import armv6m_asm
 
 @armv6m_asm.asm_thumb
-@a6a.asm_thumb
 def sum():                 # No args, since the decorator can't see them. 
                            # The launcher will give arguments as argc/argv in r6/r7 instead.
     movs(r0, 0)            # Sets flags, so it is 'movs'
@@ -40,7 +39,7 @@ The assembler directives includes the same as with @micropython.asm_thumb.
 
 `align(4)`
 
-Moves PC forward to nearest mod 4 address. The skipped bytes are filled with zerq.
+Moves PC forward to nearest mod 4 address. The skipped bytes are filled with zero.
 
 `data(size, data0, data1, ...)`
 
