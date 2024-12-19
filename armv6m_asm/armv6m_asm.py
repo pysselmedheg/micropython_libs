@@ -119,7 +119,7 @@ def data(size, *arg):
         raise Exception("Data out of bound")
     n = len(arg)
     if size == 1:
-        arg += [0]
+        arg += (0,)
         for i in range(0, n, 2):
             mc += [arg[i] | arg[i+1] << 8]
         pc += (n+1) // 2 * 2
