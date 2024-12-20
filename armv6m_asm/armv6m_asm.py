@@ -12,7 +12,7 @@ from array import array
 
 # ==== base ====
 def eval_polymorf(args, asm_def):
-    global pc
+    global _pc
     global mc
     align(2)
     for asm_variant in asm_def[1]:
@@ -22,7 +22,7 @@ def eval_polymorf(args, asm_def):
         if None in par:
             continue
         mc_temp = asm_variant[2](asm_variant[1], *par)
-        pc += 2 * len(mc_temp)
+        _pc += 2 * len(mc_temp)
         mc += mc_temp
         return
     raise Exception("Can't find match for parameters to instruction: %s" % asm_def[0])
@@ -33,7 +33,7 @@ def asm_instr_gen(asm_def):
     return asm
 
 def asm_thumb(func):
-    global pc
+    global _pc
     global mc
     global labels
     global missing_labels
@@ -44,8 +44,7 @@ def asm_thumb(func):
     exp_globs   = (get_directives() |
                    get_macros() |
                    def_tokens() |
-                   def_instructions() |
-                   {'pc':0, 'mc':[], 'labels':{}, 'missing_labels':[]})
+                   def_instructions())
     old_globs   = update_dict(func_globs, exp_globs)
     # Copy some main globals to lib globals.
     for k in ['push', 'pop', 'ldr', 'ldm', 'subs']:
@@ -54,7 +53,7 @@ def asm_thumb(func):
         labels = {}
         for i in range(2):
             missing_labels = []
-            pc = 0
+            _pc = 0
             mc = []
             push({lr})  # Emit push to make the array callable
             func()
@@ -96,22 +95,22 @@ def restore_dict(globs, new_globs, old_globs):
 
 # ==== assembler directives ====
 def label(lab):
-    global pc
+    global _pc
     global labels
     if type(lab) != type(''):
         raise Exception("Labels must be strings")
-    labels[lab] = pc
+    labels[lab] = _pc
 
 def align(n):
-    global pc
+    global _pc
     global mc
-    if pc % n:
+    if _pc % n:
         mc += [0]
-    pc = (pc + n - 1) // n * n
+    _pc = (_pc + n - 1) // n * n
 
 def data(size, *arg):
     global mc
-    global pc
+    global _pc
     if size not in (1, 2, 4):
         raise Exception("Unsupported data size: %d" % size)
     align(size)
@@ -122,14 +121,14 @@ def data(size, *arg):
         arg += (0,)
         for i in range(0, n, 2):
             mc += [arg[i] | arg[i+1] << 8]
-        pc += (n+1) // 2 * 2
+        _pc += (n+1) // 2 * 2
     elif size == 2:
         mc += arg
-        pc += size*len(arg)
+        _pc += size*len(arg)
     elif size == 4:
         for d in arg:
             mc += [d & 0xffff, (d >> 16) & 0xffff]
-        pc += size * len(arg)
+        _pc += size * len(arg)
 
 def argcount(n): # Store the excpected argc in the output.
     global argc
@@ -234,13 +233,13 @@ def label_n(lab, code, n):
         return None
     if lab in labels:
         if code:
-            imm = labels[lab] - (pc + 4)
+            imm = labels[lab] - (_pc + 4)
             if -(1 << n) <= imm < (1 << n):
                 return (imm & ((1 << (n+1)) -1)) >> 1
         else:
             if labels[lab] % 4 != 0:
                 raise Exception("Label not aligned mod 4: %s" % lab)
-            imm = labels[lab] - ((pc + 2 + 2) // 4 * 4)
+            imm = labels[lab] - ((_pc + 2 + 2) // 4 * 4)
             if 0 <= imm < (1 << (n+2)):
                 return (imm & ((1 << (n+2)) - 1)) >> 2
         return None
