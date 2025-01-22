@@ -31,7 +31,7 @@ Conditions are written as an argument, not attached to the instruction. (This is
 There are no implicit or redundant register arguments. Ie, the assembler must have as many arguments as is coded in the machine code.
 
 push, pop, ldm, and stm  uses the python set to give a register list,
-ldm and stm is do not use the ! character. (When the pointer register isn't updated.)
+ldm and stm do not use the ! character. (When the pointer register isn't updated.)
 
 ## Assembler directives
 

@@ -99,6 +99,8 @@ def label(lab):
     global labels
     if type(lab) != type(''):
         raise Exception("Labels must be strings")
+    if lab in labels and labels[lab] != _pc:
+        raise Exception("Label redefined: %s" % lab)
     labels[lab] = _pc
 
 def align(n):
